@@ -1,5 +1,5 @@
 # DEM (Directed Evolution Model) : 
-^{"Selection specifies the candidates for the mutation, while mutation improves the odds of producing stronger offsprings."}
+<u>"Selection specifies the candidates for the mutation, while mutation improves the odds of producing stronger offsprings."</u>
 Inspired by chain-of-thought derived from directed evolution, we propose the Directed Evolution Model (DEM), a hybrid approach extending evolutionary computational strategies for directed evolution within a continual reinforcement learning framework, to address both domain shift and label scarcity issues. DEM can provide a unique solution for uncertainty exploration through mimicking the trial-and-error process of directed evolution. 
 
 
