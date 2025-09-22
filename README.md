@@ -1,6 +1,8 @@
 # DEM: Directed evolution algorithm drives neural prediction
 
-"<u> ***Selection specifies the candidates for the mutation, while mutation improves the odds of producing stronger offsprings.*** </u>"
+<u aling="center"> 
+***"Selection specifies the candidates for the mutation, while mutation improves the odds of producing stronger offsprings"*** 
+</u>
 <p align="center">
 <img width="736" height="294" alt="Screenshot 2025-09-22 at 4 13 33 PM" src="https://github.com/user-attachments/assets/167bdd7a-a674-4ba1-90d2-7f7d435a5704" />
 </p>
@@ -34,13 +36,13 @@ If you use this code or use our model for your research, please cite our paper:
 @article{DEM-V0,
   title = {Directed evolution algorithm drives neural prediction},
   author = {Yanlin Wang, Nancy Young, Patrick Wong}
-  journal = {.},
-  volume = {.},
-  pages ={.},
+  journal = {},
+  volume = {},
+  pages ={},
   year = {2025},
-  doi ={.}
+  doi ={}
 }
 ```
 ## Acknowledgement
 
-We appreciate open source projects including: {"gitdown": "loss-of-plasticity"} // https://github.com/shibhansh/loss-of-plasticity
+We appreciate open source projects including: [["loss-of-plasticity" | https://github.com/shibhansh/loss-of-plasticity]]
