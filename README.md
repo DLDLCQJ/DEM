@@ -1,10 +1,11 @@
 # DEM: Directed evolution algorithm drives neural prediction
-
 <p align="center">
-<img width="736" height="294" alt="Screenshot 2025-09-22 at 4 13 33 PM" src="https://github.com/user-attachments/assets/167bdd7a-a674-4ba1-90d2-7f7d435a5704" /> 
+  <img src="https://github.com/user-attachments/assets/167bdd7a-a674-4ba1-90d2-7f7d435a5704" 
+       alt="Selection and mutation process" 
+       width="736" height="294">
 </p>
 <p align="center">
-<sub> Selection specifies the candidates for the mutation, while mutation improves the odds of producing stronger offsprings </sub>
+  <sub><em>Selection identifies candidates for mutation, while mutation increases the likelihood of producing stronger offspring.</em></sub>
 </p>
 
 Inspired by chain-of-thought derived from directed evolution, we propose the Directed Evolution Model (DEM), a hybrid approach extending evolutionary computational strategies for directed evolution within a continual reinforcement learning framework, to address both domain shift and label scarcity issues. DEM can provide a unique solution for uncertainty exploration through mimicking the trial-and-error process of directed evolution. Importantly, our algorithm has the potential to be transformative not only for medical domain but also for other domains, especially new environments where labeled data is expensive and sparse.
