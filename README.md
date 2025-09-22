@@ -1,6 +1,6 @@
 # DEM: Directed evolution algorithm drives neural prediction
 
-<h2 align="center"> Selection specifies the candidates for the mutation, while mutation improves the odds of producing stronger offsprings </h2>
+<h3 align="center"> Selection specifies the candidates for the mutation, while mutation improves the odds of producing stronger offsprings </h3>
 
 <p align="center">
 <img width="736" height="294" alt="Screenshot 2025-09-22 at 4 13 33 PM" src="https://github.com/user-attachments/assets/167bdd7a-a674-4ba1-90d2-7f7d435a5704" />
