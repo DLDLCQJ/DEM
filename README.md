@@ -1,10 +1,8 @@
 # DEM: Directed evolution algorithm drives neural prediction
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/167bdd7a-a674-4ba1-90d2-7f7d435a5704" 
-       alt="Selection and mutation process" 
-       width="736" height="294">
-</p>
-<p align="center">
+  <img src="https://github.com/user-attachments/assets/167bdd7a-a674-4ba1-90d2-7f7d435a5704"
+       alt="Selection and mutation process"
+       width="736" height="294"><br>
   <sub><em>Selection identifies candidates for mutation, while mutation increases the likelihood of producing stronger offspring.</em></sub>
 </p>
 
