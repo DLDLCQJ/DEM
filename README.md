@@ -43,4 +43,4 @@ If you use this code or use our model for your research, please cite our paper:
 ```
 ## Acknowledgement
 
-We appreciate open source projects including: [loss-of-plasticity]: https://github.com/shibhansh/loss-of-plasticity
+We appreciate open source projects including: {"gitdown": "loss-of-plasticity"} // https://github.com/shibhansh/loss-of-plasticity
