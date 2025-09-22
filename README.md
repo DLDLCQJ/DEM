@@ -20,10 +20,11 @@ A directed evolution algorithm implementing an intelligent model capable of rapi
 
 
 ## Configuration
-### Step1: Pretraining
-...
-### Step2: Instruction Tuning
-...
+#### Step1: Pretraining
+We first pretrained a source-led model, where labelled source training data and unlabelled target data as inputs, and then performance is measured on the source testing dataset. 
+
+#### Step2: Instruction Tuning
+Next, we utilized pretrained model to acquire target predictions as the initial pseudo-labeled target samples. Finally, high-confidence samples and pseudo-label variants will be iteratively produced from screening and evolving processes separately. Therefore, the continual reinforcement neural networks were iteratively trained on selective samples (screening phase) and refined pseudo-labels (evolving phase), and then their performances were measured on the target testing dataset.
 
 ## Citation
 If you use this code or use our model for your research, please cite our paper:
@@ -40,4 +41,4 @@ If you use this code or use our model for your research, please cite our paper:
 ```
 ## Acknowledgement
 
-We appreciate open source projects including: [loss-of-plasticity](https://github.com/shibhansh/loss-of-plasticity)
+We appreciate open source projects including: [loss-of-plasticity]: https://github.com/shibhansh/loss-of-plasticity
