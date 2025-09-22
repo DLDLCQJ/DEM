@@ -1,5 +1,4 @@
 # DEM: Directed evolution algorithm drives neural prediction
-<ins>Yanlin Wang</ins>, <ins>Nancy M Young</ins>, <ins>Patrick C M Wong</ins>
 
 <p align="center">
 <img width="736" height="294" alt="Screenshot 2025-09-22 at 4 13 33 PM" src="https://github.com/user-attachments/assets/167bdd7a-a674-4ba1-90d2-7f7d435a5704" />
@@ -33,7 +32,7 @@ If you use this code or use our model for your research, please cite our paper:
 ```bibtex
 @article{DEM-V0,
   title = {Directed evolution algorithm drives neural prediction},
-  author = {Yanlin Wang, Nancy Young, Patrick Wong}
+  author = {<ins> Yanlin Wang </ins>, <ins> Nancy M Young </ins>, <ins> Patrick C M Wong </ins>}
   journal = {},
   volume = {},
   pages ={},
