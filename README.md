@@ -27,7 +27,7 @@ A directed evolution algorithm implementing an intelligent model capable of rapi
 
 ## Citation
 If you use this code or use our model for your research, please cite our paper:
-
+```bibtex
 @article{DEM-V0,
   title = {Directed evolution algorithm drives neural prediction},
   author = {Yanlin Wang, Nancy Young, Patrick Wong}
@@ -37,8 +37,7 @@ If you use this code or use our model for your research, please cite our paper:
   year = {.},
   doi ={.}
   }
-  
-
+```
 ## Acknowledgement
 
 We appreciate open source projects including: loss-of-plasticity
