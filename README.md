@@ -34,10 +34,10 @@ If you use this code or use our model for your research, please cite our paper:
   journal = {.},
   volume = {.},
   pages ={.},
-  year = {.},
+  year = {2025},
   doi ={.}
-  }
+}
 ```
 ## Acknowledgement
 
-We appreciate open source projects including: loss-of-plasticity
+We appreciate open source projects including: [loss-of-plasticity](https://github.com/shibhansh/loss-of-plasticity)
