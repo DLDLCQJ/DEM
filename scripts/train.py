@@ -168,8 +168,5 @@ def reassigned_labels_alone(args, model, data):
     return predictions,confidences,val_acc
 
 
-
-
-
-....
+"Updating ...."
 
