@@ -80,6 +80,7 @@ def main(args):
         ### Starting
         os.makedirs(args.save_dir, exist_ok=True)
         model = get_pretrain_model(args)  
+        model = nn.DataParallel(model, device_ids=args.device_ids, output_device=args.device)
         for name, param in model.named_parameters():
             print(f"Pretrain: {name} | Requires Gradient: {param.requires_grad}")            
         criterion = nn.BCEWithLogitsLoss(reduction='mean') 
@@ -106,6 +107,7 @@ def main(args):
             tgt_tr_preds, init_acc = reassigned_labels_alone(args,model,tgt_tr_dataset)
 
         models = get_model(args) 
+        models = nn.DataParallel(models, device_ids=args.device_ids, output_device=args.device)
         best_evolved_results_tr,best_evolved_results_val,best_threshed_results_tr,best_threshed_results_val,best_model = train_epoch(args,models,src_tr_loader,src_val_loader,tgt_tr_dataset,tgt_val_dataset,tgt_tr_preds,init_acc,fold)                 
         # Stage-3: Testing
         src_results_te = test_epoch(args, best_model, src_loader=src_val_loader, tgt_loader=tgt_te_loader,domain='source', fold=fold)
