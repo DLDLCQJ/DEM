@@ -1,5 +1,5 @@
-# DEM V1 
-#### Directed evolution algorithm drives neural prediction
+# DEM-V1 
+## Directed evolution algorithm drives neural prediction
 <p align="center">
   <img src="https://github.com/user-attachments/assets/167bdd7a-a674-4ba1-90d2-7f7d435a5704"
        alt="Selection and mutation process"
