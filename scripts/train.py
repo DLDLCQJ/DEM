@@ -322,111 +322,210 @@ def run_alone_retrain_epoch(args, model, optimizer, lr_scheduler, next_tgt_datas
     else:
         return epoch_loss, predictions, truths, tgt_acc, src_acc
  
-def pretrain_epoch(args, model, src_tr_loader, src_val_loader, tgt_tr_dataset,tgt_val_dataset,fold, criterion, optimizer, lr_scheduler):
+def pretrain_epoch(args, model, src_tr_loader, src_val_loader, tgt_tr_dataset, tgt_val_dataset, fold, criterion, optimizer, lr_scheduler):
     best_loss = float('inf')
     total_time = 0
     start_time = time.time()
+    
+    # Tensor to handle early stopping synchronization
+    stop_signal = torch.zeros(1).to(args.device)
+
     for pre_epoch in range(args.num_epochs_pretrain):
-        print(f"Starting Pretraining epoch {pre_epoch+1}")
-        if args.continual_type == 'CRL':
-            run_pretrain_epoch(args, model, src_tr_loader, tgt_tr_dataset,fold, epoch=pre_epoch,criterion=criterion,optimizer=optimizer, lr_scheduler=lr_scheduler,mode='train')
-            epoch_time = time.time() - start_time
-            total_time += epoch_time
-            with torch.no_grad():
-                val_loss, val_predicts,val_truths,val_acc = run_pretrain_epoch(args, model, src_val_loader, tgt_val_dataset,fold,epoch=pre_epoch,criterion=criterion,mode='eval')
-            print(50*"--")
-            print(f"Fold {fold + 1}, Pre_Epoch [{pre_epoch + 1}/{args.num_epochs_pretrain}], Cumulative_time:{total_time:.4f}, Epoch_time:{epoch_time:.4f},Pre_val_loss: {val_loss:.4f}, Pre_val_acc: {val_acc:.4f}")
-        else:
-            run_alone_pretrain_epoch(args, model, src_tr_loader,criterion=criterion,optimizer=optimizer, lr_scheduler=lr_scheduler,mode='train')
-            epoch_time = time.time() - start_time
-            total_time += epoch_time
-            with torch.no_grad():
-                val_loss, val_predicts,val_truths,val_acc = run_alone_pretrain_epoch(args, model, src_val_loader,criterion=criterion,mode='eval')
-            print(50*"--")
-            print(f"Fold {fold + 1}, Pre_Epoch [{pre_epoch + 1}/{args.num_epochs_pretrain}],Cumulative_time:{total_time:.4f}, Epoch_time:{epoch_time:.4f}, Pre_val_loss: {val_loss:.4f}, Pre_val_acc: {val_acc:.4f}")
-        # early stopping
-        if val_loss < best_loss:
-            best_loss = val_loss
-            counter = 0
-        else:
-            counter += 1
-            if counter >= args.pre_patience:
-                print(f"Early stopping pretrain triggered on fold {fold + 1}, pre_epoch {pre_epoch + 1}")
-                break
+        if args.distributed:
+            src_tr_loader.sampler.set_epoch(pre_epoch)
+            src_val_loader.sampler.set_epoch(pre_epoch)
 
-
-def retrain_epoch(args,model_C,model_R,initial_model_state,src_tr_loader,src_val_loader,thre_tgt_tr_dataset,tgt_val_dataset,fold,epoch,iterate,
-                  criterion,optimizer=None,lr_scheduler=None,gnt_extract=None,gnt_clf=None):
-    model_C.load_state_dict(initial_model_state)
-    counter =0    
-    best_model_state,best_results_tr,best_results_val,best_val_acc = None, None, None, None
-    best_loss = float('inf')
-    results_tr, results_val = [],[]
-    total_time =0
-    start_time = time.time()
-    for re_epoch in range(args.num_epochs_train):
-        if args.continual_type=='CRL':
-            tr_loss,tr_predicts,tr_probs,tr_truths,tgt_tr_acc = run_retrain_epoch(args,model_C,model_R,optimizer,lr_scheduler,thre_tgt_tr_dataset,src_loader=src_tr_loader,fold=fold,sub_epoch=re_epoch,criterion=criterion,mode='train',gnt_extract=gnt_extract, gnt_clf=gnt_clf)
-            epoch_time = time.time() - start_time
-            total_time += epoch_time
-            with torch.no_grad():
-                val_loss,val_predicts,val_probs,val_truths,tgt_val_acc,src_val_acc = run_retrain_epoch(args,model_C,model_R,optimizer,lr_scheduler,tgt_val_dataset,src_loader=src_val_loader,fold=fold,sub_epoch=re_epoch,criterion=criterion,mode='eval',gnt_extract=gnt_extract, gnt_clf=gnt_clf)
-            print(50*"--")
-            print(f"Fold {fold + 1},Epoch [{epoch + 1}/{args.num_epochs}],Re_Epoch [{re_epoch + 1}/{args.num_epochs_train}],Cumulative_time:{total_time:.4f}, Epoch_time:{epoch_time:.4f},Tr_Loss: {tr_loss:.4f}, Tr_Acc: {tgt_tr_acc:.4f},Val_loss:{val_loss:.4f}, Val_tgt_acc:{tgt_val_acc}, Val_src_acc:{src_val_acc}")
-        elif args.continual_type=='RL':
-            tr_loss,tr_predicts,tr_truths,tgt_tr_acc = run_alone_retrain_epoch(args,model_C,model_R,optimizer,lr_scheduler,thre_tgt_tr_dataset,src_tr_loader,fold=fold,criterion=criterion,mode='train',gnt_extract=gnt_extract, gnt_clf=gnt_clf)
-            epoch_time = time.time() - start_time
-            total_time += epoch_time
-            with torch.no_grad():
-                val_loss,val_predicts,val_truths,tgt_val_acc,src_val_acc = run_alone_retrain_epoch(args, model_C,model_R, optimizer,lr_scheduler,tgt_val_dataset,src_val_loader,fold=fold,criterion=criterion,mode='eval',gnt_extract=gnt_extract, gnt_clf=gnt_clf)
-            print(50*"--")
-            print(f"Fold {fold + 1},Epoch [{epoch + 1}/{args.num_epochs}], Re_Epoch [{re_epoch + 1}/{args.num_epochs_train}], Cumulative_time:{total_time:.4f}, Epoch_time:{epoch_time:.4f},Tr_Loss: {tr_loss:.4f}, Tr_Acc: {tgt_tr_acc:.4f},Val_loss:{val_loss:.4f}, Val_tgt_acc:{tgt_val_acc}, Val_src_acc:{src_val_acc}")
-        # Early stopping for retraining loop
-        if val_loss < best_loss:
-            best_loss = val_loss
-            best_epoch = re_epoch
-            best_probs = tr_probs
-            best_epoch_predicts_tr = tr_predicts
-            best_epoch_labels_tr = tr_truths
-            best_epoch_predicts_val = val_predicts
-            best_epoch_labels_val = val_truths
-            best_val_acc = tgt_val_acc
-            best_model_state = copy.deepcopy(model_C.state_dict())
-            # best_model_state = model.state_dict()
-            # Store results for the fold
-            best_results_tr={
-                "fold": fold + 1,
-                "epoch": best_epoch + 1,
-                "predictions": best_epoch_predicts_tr,
-                "labels": best_epoch_labels_tr
-            }
-            best_results_val={
-                "fold": fold + 1,
-                "epoch": best_epoch + 1,
-                "predictions": best_epoch_predicts_val,
-                "labels": best_epoch_labels_val
-            }
-            counter =0
-        else:
-            counter += 1
-            if counter >= args.re_patience:
-                print(f"Early stopping retrain triggered on fold {fold + 1}, re_epoch {re_epoch + 1}")
-                break
-        # lr_scheduler_re.step()
-        # probs_.append(tr_probs)
-        # rewards_.append(tgt_val_acc)
-        results_tr.append(best_results_tr)
-        results_val.append(best_results_val) 
-
-    # gradient averaging
-    # with torch.no_grad():
-    #     for param in model.parameters():
-    #         if param.grad is not None:
-    #             param.grad /= args.num_epochs_train
+        if args.rank == 0:
+            print(f"Starting Pretraining epoch {pre_epoch+1}")
         
-    # optimizer.step()
-    return results_tr,results_val,best_val_acc,best_model_state,best_probs
+        if args.continual_type == 'CRL':
+            run_pretrain_epoch(args, model, src_tr_loader, tgt_tr_dataset, fold, epoch=pre_epoch, criterion=criterion, optimizer=optimizer, lr_scheduler=lr_scheduler, mode='train')
+        else:
+            run_alone_pretrain_epoch(args, model, src_tr_loader, criterion=criterion, optimizer=optimizer, lr_scheduler=lr_scheduler, mode='train')
+            
+        epoch_time = time.time() - start_time
+        total_time += epoch_time
 
+        with torch.no_grad():
+            if args.continual_type == 'CRL':
+                # Assuming run_pretrain_epoch returns tensors on device. If scalars/lists, convert them.
+                val_loss, val_predicts, val_truths, _ = run_pretrain_epoch(args, model, src_val_loader, tgt_val_dataset, fold, epoch=pre_epoch, criterion=criterion, mode='eval')
+            else:
+                val_loss, val_predicts, val_truths, _ = run_alone_pretrain_epoch(args, model, src_val_loader, criterion=criterion, mode='eval')
+
+        if args.distributed:
+            # Aggregate Loss
+            val_loss = torch.tensor(val_loss).to(args.device) if not torch.is_tensor(val_loss) else val_loss
+            dist.all_reduce(val_loss, op=dist.ReduceOp.SUM)
+            val_loss /= args.world_size
+            
+            # Gather Predictions & Labels
+            # Ensure they are tensors on the GPU
+            if not torch.is_tensor(val_predicts): val_predicts = torch.tensor(val_predicts).to(args.device)
+            if not torch.is_tensor(val_truths): val_truths = torch.tensor(val_truths).to(args.device)
+            
+            preds_list = [torch.zeros_like(val_predicts) for _ in range(args.world_size)]
+            labels_list = [torch.zeros_like(val_truths) for _ in range(args.world_size)]
+            
+            dist.all_gather(preds_list, val_predicts)
+            dist.all_gather(labels_list, val_truths)
+            
+            all_preds = torch.cat(preds_list)
+            all_labels = torch.cat(labels_list)
+        else:
+            all_preds, all_labels = val_predicts, val_truths
+
+        if args.rank == 0:
+            # Calculate accuracy on gathered data
+            # Assuming binary classification logic based on your code context
+            probs = torch.sigmoid(all_preds)
+            preds_binary = (probs > 0.5).float()
+            val_acc = accuracy_score(all_labels.cpu().numpy(), preds_binary.cpu().numpy())
+            
+            print(50 * "--")
+            print(f"Fold {fold + 1}, Pre_Epoch [{pre_epoch + 1}/{args.num_epochs_pretrain}], Cumulative_time:{total_time:.4f}, Epoch_time:{epoch_time:.4f}, Pre_val_loss: {val_loss.item():.4f}, Pre_val_acc: {val_acc:.4f}")
+
+            # Early Stopping Check
+            if val_loss.item() < best_loss:
+                best_loss = val_loss.item()
+                counter = 0
+            else:
+                counter += 1
+                if counter >= args.pre_patience:
+                    print(f"Early stopping pretrain triggered on fold {fold + 1}, pre_epoch {pre_epoch + 1}")
+                    stop_signal.fill_(1.0)
+    
+        if args.distributed:
+            dist.broadcast(stop_signal, src=0)
+        
+        if stop_signal.item() == 1.0:
+            break
+
+
+def retrain_epoch(args, model_C, model_R, initial_model_state, src_tr_loader, src_val_loader, thre_tgt_tr_dataset, tgt_val_dataset, fold, epoch, iterate,
+                  criterion, optimizer=None, lr_scheduler=None, gnt_extract=None, gnt_clf=None):
+    
+    # Load initial state (ensure this is done on all ranks)
+    model_C.load_state_dict(initial_model_state)
+    
+    counter = 0    
+    best_model_state, best_results_tr, best_results_val, best_val_acc = None, None, None, None
+    best_loss = float('inf')
+    best_probs = None # Initialize to avoid UnboundLocalError
+    results_tr, results_val = [], []
+    total_time = 0
+    start_time = time.time()
+    
+    stop_signal = torch.zeros(1).to(args.device)
+
+    for re_epoch in range(args.num_epochs_train):
+        if args.distributed:
+            src_tr_loader.sampler.set_epoch(re_epoch)
+            src_val_loader.sampler.set_epoch(re_epoch)
+
+        if args.continual_type == 'CRL':
+            tr_loss, tr_predicts, tr_probs, tr_truths, _ = run_retrain_epoch(args, model_C, model_R, optimizer, lr_scheduler, thre_tgt_tr_dataset, src_loader=src_tr_loader, fold=fold, sub_epoch=re_epoch, criterion=criterion, mode='train', gnt_extract=gnt_extract, gnt_clf=gnt_clf)
+        elif args.continual_type == 'RL':
+            tr_loss, tr_predicts, tr_truths, _ = run_alone_retrain_epoch(args, model_C, model_R, optimizer, lr_scheduler, thre_tgt_tr_dataset, src_tr_loader, fold=fold, criterion=criterion, mode='train', gnt_extract=gnt_extract, gnt_clf=gnt_clf)
+            tr_probs = torch.sigmoid(tr_predicts) # Derive probs if not returned
+
+        epoch_time = time.time() - start_time
+        total_time += epoch_time
+
+        with torch.no_grad():
+            if args.continual_type == 'CRL':
+                val_loss, val_predicts, val_probs, val_truths, _, _ = run_retrain_epoch(args, model_C, model_R, optimizer, lr_scheduler, tgt_val_dataset, src_loader=src_val_loader, fold=fold, sub_epoch=re_epoch, criterion=criterion, mode='eval', gnt_extract=gnt_extract, gnt_clf=gnt_clf)
+            elif args.continual_type == 'RL':
+                val_loss, val_predicts, val_truths, _, _ = run_alone_retrain_epoch(args, model_C, model_R, optimizer, lr_scheduler, tgt_val_dataset, src_val_loader, fold=fold, criterion=criterion, mode='eval', gnt_extract=gnt_extract, gnt_clf=gnt_clf)
+                val_probs = torch.sigmoid(val_predicts)
+
+        if args.distributed:
+            # Reduce Losses
+            tr_loss = torch.tensor(tr_loss).to(args.device) if not torch.is_tensor(tr_loss) else tr_loss
+            val_loss = torch.tensor(val_loss).to(args.device) if not torch.is_tensor(val_loss) else val_loss
+            
+            dist.all_reduce(tr_loss, op=dist.ReduceOp.SUM)
+            dist.all_reduce(val_loss, op=dist.ReduceOp.SUM)
+            tr_loss /= args.world_size
+            val_loss /= args.world_size
+            
+            # Gather Predictions/Labels (Validation) for accurate metric calculation
+            if not torch.is_tensor(val_predicts): val_predicts = torch.tensor(val_predicts).to(args.device)
+            if not torch.is_tensor(val_truths): val_truths = torch.tensor(val_truths).to(args.device)
+            
+            val_preds_list = [torch.zeros_like(val_predicts) for _ in range(args.world_size)]
+            val_labels_list = [torch.zeros_like(val_truths) for _ in range(args.world_size)]
+            
+            dist.all_gather(val_preds_list, val_predicts)
+            dist.all_gather(val_labels_list, val_truths)
+            
+            all_val_preds = torch.cat(val_preds_list)
+            all_val_labels = torch.cat(val_labels_list)
+
+            # Note: We usually don't need to gather Train preds unless debugging, 
+            # calculating Train Acc roughly on local rank is often acceptable, 
+            # but for consistency we can gather them or just calc local acc. 
+            # Below I calc local acc for train to save overhead, but full acc for val.
+        else:
+            all_val_preds, all_val_labels = val_predicts, val_truths
+
+        if args.rank == 0:
+            # Calc Val metrics
+            val_probs_all = torch.sigmoid(all_val_preds)
+            val_preds_binary = (val_probs_all > 0.5).float()
+            tgt_val_acc = accuracy_score(all_val_labels.cpu().numpy(), val_preds_binary.cpu().numpy())
+            
+            # Calc Train metrics (Approximate or Gather if needed. Here using local for display)
+            # If you strictly need exact global train acc, you must gather tr_predicts too.
+            tgt_tr_acc = accuracy_score(tr_truths.cpu().numpy(), (torch.sigmoid(tr_predicts) > 0.5).cpu().float().numpy())
+
+            print(50 * "--")
+            print(f"Fold {fold + 1}, Epoch [{epoch + 1}/{args.num_epochs}], Re_Epoch [{re_epoch + 1}/{args.num_epochs_train}], Cumulative_time:{total_time:.4f}, Epoch_time:{epoch_time:.4f}, Tr_Loss: {tr_loss.item():.4f}, Tr_Acc: {tgt_tr_acc:.4f}, Val_loss:{val_loss.item():.4f}, Val_tgt_acc:{tgt_val_acc:.4f}")
+
+            # Early Stopping Check
+            if val_loss.item() < best_loss:
+                best_loss = val_loss.item()
+                best_epoch = re_epoch
+                # Save best state (unwrap DDP if present)
+                if isinstance(model_C, torch.nn.parallel.DistributedDataParallel):
+                     best_model_state = copy.deepcopy(model_C.module.state_dict())
+                else:
+                     best_model_state = copy.deepcopy(model_C.state_dict())
+                
+                best_probs = tr_probs # Note: this is local probs. For full saving you might want to gather.
+                best_val_acc = tgt_val_acc
+                
+                # Construct result dictionaries
+                best_results_tr = {
+                    "fold": fold + 1,
+                    "epoch": best_epoch + 1,
+                    "predictions": tr_predicts.cpu().tolist(), # Local preds
+                    "labels": tr_truths.cpu().tolist()
+                }
+                best_results_val = {
+                    "fold": fold + 1,
+                    "epoch": best_epoch + 1,
+                    "predictions": all_val_preds.cpu().tolist(), # Global preds
+                    "labels": all_val_labels.cpu().tolist()
+                }
+                counter = 0
+            else:
+                counter += 1
+                if counter >= args.re_patience:
+                    print(f"Early stopping retrain triggered on fold {fold + 1}, re_epoch {re_epoch + 1}")
+                    stop_signal.fill_(1.0)
+                    
+            if best_results_tr: results_tr.append(best_results_tr)
+            if best_results_val: results_val.append(best_results_val)
+
+        if args.distributed:
+            dist.broadcast(stop_signal, src=0)
+        
+        if stop_signal.item() == 1.0:
+            break
+
+    return results_tr, results_val, best_val_acc, best_model_state, best_probs
+                      
 def sigmoid(X):
    return 1/(1+np.exp(-X))
 
