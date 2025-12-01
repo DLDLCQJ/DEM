@@ -8,6 +8,7 @@ import copy
 import numpy as np
 import math
 import pickle
+from torch.utils.data.distributed import DistributedSampler
 import random
 import torch
 import torch.nn as nn
