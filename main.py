@@ -10,6 +10,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from transformers import get_scheduler
+from torch.utils.data.distributed import DistributedSampler
+from torch.nn.parallel import DistributedDataParallel as DDP
 from sklearn.model_selection import StratifiedKFold,train_test_split
 from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler,Subset
 
