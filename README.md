@@ -33,7 +33,7 @@ If you use this code or use our model for your research, please cite our paper:
 ```bibtex
 @article{DEM-V1,
   title = {Directed evolution algorithm drives neural prediction},
-  author = { Yanlin Wang, Nancy M Young, Patrick C M Wong}
+  author = {Yanlin Wang, Nancy M Young, Patrick C M Wong}
   journal = {},
   volume = {},
   pages ={},
